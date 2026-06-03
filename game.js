@@ -8,6 +8,8 @@ const overlay = document.getElementById("overlay");
 const overlayTitle = document.getElementById("overlay-title");
 const overlayText = document.getElementById("overlay-text");
 const startBtn = document.getElementById("start-btn");
+const leaderboardList = document.getElementById("leaderboard-list");
+const rialoLogoImg = document.getElementById("rialoLogoSource");
 
 // Konfigurasi Grid
 const gridSize = 20;
@@ -23,17 +25,25 @@ let highScore = 0;
 let gameInterval;
 let isGameRunning = false;
 
-// Event Listener untuk Tombol Start & Kontrol Keyboard
+// Data Simpanan Leaderboard Berbasis Penyimpanan Lokal HP (Local Storage)
+let leaderboards = JSON.parse(localStorage.getItem("rialo_leaderboard")) || [
+    { name: "Felix", score: 50 },
+    { name: "Rialo Bot", score: 30 },
+    { name: "Player 3", score: 10 }
+];
+
+// Jalankan fungsi memuat peringkat pertama kali game dibuka
+updateLeaderboardUI();
+
+// Event Listener
 startBtn.addEventListener("click", startGame);
 document.addEventListener("keydown", changeDirection);
 
-// Event Listener untuk Kontrol Layar Sentuh HP
 document.getElementById("ctrl-up").addEventListener("click", () => triggerDirection("UP"));
 document.getElementById("ctrl-down").addEventListener("click", () => triggerDirection("DOWN"));
 document.getElementById("ctrl-left").addEventListener("click", () => triggerDirection("LEFT"));
 document.getElementById("ctrl-right").addEventListener("click", () => triggerDirection("RIGHT"));
 
-// Mencegah layar scroll otomatis saat tombol di-tap di HP
 const noScrollButtons = document.querySelectorAll('.ctrl-btn');
 noScrollButtons.forEach(btn => {
     btn.addEventListener('touchstart', (e) => e.preventDefault(), {passive: false});
@@ -57,10 +67,13 @@ function startGame() {
     score = 0;
     scoreElement.innerText = `SCORE: ${score}`;
     
-    generateFood();
+    // Ambil high score tersimpan di data leaderboard
+    highScore = leaderboards[0] ? leaderboards[0].score : 0;
+    highScoreElement.innerText = `HIGH SCORE: ${highScore}`;
     
+    generateFood();
     clearInterval(gameInterval);
-    gameInterval = setInterval(gameLoop, 110); // Kecepatan disesuaikan agar pas di HP
+    gameInterval = setInterval(gameLoop, 115);
 }
 
 function gameLoop() {
@@ -68,7 +81,6 @@ function gameLoop() {
         endGame();
         return;
     }
-
     clearCanvas();
     drawFood();
     moveSnake();
@@ -79,30 +91,27 @@ function clearCanvas() {
     ctx.fillStyle = "#121212";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
     for (let i = 0; i < canvas.width; i += gridSize) {
         ctx.beginPath();
         ctx.moveTo(i, 0);
         ctx.lineTo(i, canvas.height);
         ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(0, i);
-        ctx.lineTo(canvas.width, i);
-        ctx.stroke();
     }
 }
 
+// MENGUBAH ULAR: Berwarna Emas Rialo Elegan dengan Kepala Lebih Terang
 function drawSnake() {
     snake.forEach((part, index) => {
         if (index === 0) {
-            ctx.fillStyle = "#f0efe9"; 
+            ctx.fillStyle = "#f0efe9"; // Kepala Ular Putih Rialo
         } else {
-            ctx.fillStyle = `rgba(160, 160, 160, ${1 - index / snake.length})`;
+            ctx.fillStyle = "#ffdd53"; // Badan Ular Emas Berkilau
         }
         
-        ctx.fillRect(part.x, part.y, gridSize - 2, gridSize - 2);
+        ctx.fillRect(part.x, part.y, gridSize - 1, gridSize - 1);
         ctx.strokeStyle = "#121212";
-        ctx.strokeRect(part.x, part.y, gridSize - 2, gridSize - 2);
+        ctx.strokeRect(part.x, part.y, gridSize - 1, gridSize - 1);
     });
 }
 
@@ -110,8 +119,7 @@ function moveSnake() {
     const head = { x: snake[0].x + dx, y: snake[0].y + dy };
     snake.unshift(head);
 
-    const hasEaten = snake[0].x === food.x && snake[0].y === food.y;
-    if (hasEaten) {
+    if (snake[0].x === food.x && snake[0].y === food.y) {
         score += 10;
         scoreElement.innerText = `SCORE: ${score}`;
         generateFood();
@@ -125,26 +133,32 @@ function generateFood() {
     food.y = Math.floor(Math.random() * tileCount) * gridSize;
 
     snake.forEach(part => {
-        if (part.x === food.x && part.y === food.y) {
-            generateFood();
-        }
+        if (part.x === food.x && part.y === food.y) generateFood();
     });
 }
 
+// MENGUBAH BOLA MAKANAN JADI LOGO RIALO BULAT
 function drawFood() {
-    ctx.fillStyle = "#ffdd53";
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = "#ffdd53";
+    ctx.save();
     ctx.beginPath();
-    ctx.arc(food.x + gridSize/2, food.y + gridSize/2, gridSize/2 - 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
+    // Buat kliping lingkaran agar gambar logo berbentuk bulat sempurna
+    ctx.arc(food.x + gridSize / 2, food.y + gridSize / 2, gridSize / 2, 0, Math.PI * 2);
+    ctx.clip();
+    
+    // Gambar Logo Rialo (IMG_3277.jpeg) tepat di posisi makanan tersebut
+    ctx.drawImage(rialoLogoImg, food.x, food.y, gridSize, gridSize);
+    ctx.restore();
+    
+    // Tambahkan efek cahaya tipis di pinggir logo makanan
+    ctx.strokeStyle = "#ffdd53";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(food.x + gridSize / 2, food.y + gridSize / 2, gridSize / 2, 0, Math.PI * 2);
+    ctx.stroke();
 }
 
-// Logika pergerakan tombol HP dan Keyboard
 function triggerDirection(dir) {
     if (!isGameRunning) return;
-
     const goingUp = dy === -gridSize;
     const goingDown = dy === gridSize;
     const goingRight = dx === gridSize;
@@ -165,9 +179,7 @@ function changeDirection(event) {
 }
 
 function checkGameOver() {
-    if (snake[0].x < 0 || snake[0].x >= canvas.width || snake[0].y < 0 || snake[0].y >= canvas.height) {
-        return true;
-    }
+    if (snake[0].x < 0 || snake[0].x >= canvas.width || snake[0].y < 0 || snake[0].y >= canvas.height) return true;
     for (let i = 4; i < snake.length; i++) {
         if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) return true;
     }
@@ -177,14 +189,48 @@ function checkGameOver() {
 function endGame() {
     clearInterval(gameInterval);
     isGameRunning = false;
-    
-    if (score > highScore) {
-        highScore = score;
-        highScoreElement.innerText = `HIGH SCORE: ${highScore}`;
-    }
 
     overlayTitle.innerText = "GAME OVER";
-    overlayText.innerText = `Skor Terakhir Kamu: ${score}`;
+    overlayText.innerText = `Skor Kamu: ${score}`;
     startBtn.innerText = "MAIN LAGI";
     overlay.style.display = "flex";
+
+    // Cek apakah skor masuk 3 besar leaderboard
+    checkLeaderboardRecord(score);
+}
+
+// LOGIKA SISTEM REKORD LEADERBOARD
+function checkLeaderboardRecord(finalScore) {
+    // Jika skor lebih tinggi dari peringkat terbawah di leaderboard saat ini
+    if (finalScore > leaderboards[2].score) {
+        // Beri jeda sedikit setelah game over biar animasi mulus, lalu minta input nama pemain
+        setTimeout(() => {
+            let playerName = prompt("🔥 LUAR BIASA! Kamu masuk TOP 3 Leaderboard. Masukkan namamu:");
+            if (!playerName || playerName.trim() === "") playerName = "Player";
+            
+            // Masukkan data skor baru
+            leaderboards.push({ name: playerName.slice(0, 12), score: finalScore });
+            
+            // Urutkan dari skor tertinggi ke terendah
+            leaderboards.sort((a, b) => b.score - a.score);
+            
+            // Ambil 3 teratas saja
+            leaderboards = leaderboards.slice(0, 3);
+            
+            // Simpan secara permanen di browser HP
+            localStorage.setItem("rialo_leaderboard", JSON.stringify(leaderboards));
+            
+            // Perbarui tampilan Papan Skor
+            updateLeaderboardUI();
+        }, 500);
+    }
+}
+
+function updateLeaderboardUI() {
+    leaderboardList.innerHTML = "";
+    leaderboards.forEach((player) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="rank-name">${player.name}</span> <span class="rank-score">${player.score}</span>`;
+        leaderboardList.appendChild(li);
+    });
 }
