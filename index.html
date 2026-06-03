@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rialo Game Snake</title>
     <link rel="stylesheet" href="style.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
-    <!-- Gambar Tersembunyi untuk Memuat Logo Rialo ke dalam Canvas Game -->
     <img id="rialoLogoSource" src="IMG_3277.jpeg" alt="Rialo Logo Source" style="display: none;">
 
     <div class="game-container">
-        <!-- Header Game -->
         <header>
             <div class="logo-container">
                 <img src="IMG_3277.jpeg" alt="Rialo Logo" class="rialo-logo">
@@ -24,11 +25,9 @@
             </div>
         </header>
 
-        <!-- Area Bermain (Canvas) -->
         <main class="game-area">
             <canvas id="gameCanvas" width="400" height="400"></canvas>
             
-            <!-- Layar Game Over / Start -->
             <div id="overlay" class="overlay">
                 <h2 id="overlay-title">SPACE MISSION</h2>
                 <p id="overlay-text">Tekan tombol di bawah untuk memulai</p>
@@ -36,17 +35,13 @@
             </div>
         </main>
 
-        <!-- Papan Peringkat / Leaderboard -->
         <section class="leaderboard-section">
-            <h3>🏆 TOP LEADERBOARD</h3>
+            <h3>🏆 TOP 5 LEADERBOARD GLOBAL</h3>
             <ol id="leaderboard-list">
-                <li><span class="rank-name">Felix</span> <span class="rank-score">0</span></li>
-                <li><span class="rank-name">Rialo Bot</span> <span class="rank-score">0</span></li>
-                <li><span class="rank-name">Player 3</span> <span class="rank-score">0</span></li>
+                <li><span class="rank-name">Memuat data...</span></li>
             </ol>
         </section>
 
-        <!-- Tombol Kontrol khusus HP -->
         <div class="mobile-controls">
             <button class="ctrl-btn up" id="ctrl-up">▲</button>
             <div class="middle-row">
@@ -57,11 +52,27 @@
             <button class="ctrl-btn down" id="ctrl-down">▼</button>
         </div>
 
-        <!-- Footer / Kredit Pembuat -->
         <footer>
             <p class="credits">By Felix X Cadis0871</p>
         </footer>
     </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBu58SPDb6V6hIyFoxnYgoPia90N1c-7iA",
+            authDomain: "game-leaderboard-9498c.firebaseapp.com",
+            databaseURL: "https://game-leaderboard-9498c-default-rtdb.firebaseio.com",
+            projectId: "game-leaderboard-9498c",
+            storageBucket: "game-leaderboard-9498c.firebasestorage.app",
+            messagingSenderId: "11880113468",
+            appId: "1:11880113468:web:5b6136228a99dde4756a39",
+            measurementId: "G-FE3Q7JB02X"
+        };
+
+        // Inisialisasi ke sistem game
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+    </script>
 
     <script src="game.js"></script>
 </body>
