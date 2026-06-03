@@ -22,7 +22,7 @@
             display: inline-flex;
             align-items: center;
             padding: 8px 16px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             font-size: 12px;
             font-weight: 600;
             text-decoration: none;
@@ -108,9 +108,14 @@
             margin-left: 4px;
         }
         
-        /* Menyembunyikan tombol panah jadul agar layar bersih dan elegan */
+        /* 100% MEMAKSA TOMBOL BAWAH HILANG TOTAL DARI LAYAR HP */
         .mobile-controls {
             display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
     </style>
 </head>
@@ -160,6 +165,17 @@
                 <li><span class="rank-name">Memuat data...</span></li>
             </ol>
         </section>
+
+        <!-- Tombol ini sudah dinonaktifkan total lewat CSS di atas -->
+        <div class="mobile-controls">
+            <button class="ctrl-btn up" id="ctrl-up">▲</button>
+            <div class="middle-row">
+                <button class="ctrl-btn left" id="ctrl-left">◀</button>
+                <div class="spacer"></div>
+                <button class="ctrl-btn right" id="ctrl-right">▶</button>
+            </div>
+            <button class="ctrl-btn down" id="ctrl-down">▼</button>
+        </div>
 
         <footer>
             <p class="credits">
